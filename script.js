@@ -1,7 +1,7 @@
 var BLOCK_SIDE_LENGTH = 30;
 var ROWS = 20;
 var COLS = 10;
-var SCORE_WORTH = 10;
+var SCORE_WORTH = 40;
 var GAME_CLOCK = 500;
 var SHAPES = [
     [
@@ -33,6 +33,16 @@ var SHAPES = [
         [0, 7, 7],
         [0, 0, 0],
     ],
+];
+var COLORS = [
+    '#000000',
+    '#FF0000',
+    '#0000FF',
+    '#0000FF',
+    '#FFFF00',
+    '#00FFFF',
+    '#10FF01',
+    '#F000FF'
 ];
 var GameModel = /** @class */ (function () {
     function GameModel(ctx) {
@@ -77,9 +87,8 @@ var GameModel = /** @class */ (function () {
         for (var i = 0; i < this.grid.length; i++) {
             for (var j = 0; j < this.grid[i].length; j++) {
                 var cell = this.grid[i][j];
-                this.ctx.fillStyle = 'green';
+                this.ctx.fillStyle = COLORS[cell];
                 this.ctx.fillRect(j, i, 1, 1);
-                console.log(this.ctx);
             }
         }
         if (this.fallingPiece !== null) {
@@ -161,7 +170,7 @@ var Piece = /** @class */ (function () {
         this.shape.map(function (row, i) {
             row.map(function (cell, j) {
                 if (cell > 0) {
-                    _this.ctx.fillStyle = 'red';
+                    _this.ctx.fillStyle = COLORS[cell];
                     _this.ctx.fillRect(_this.x + j, _this.y + i, 1, 1);
                 }
             });
@@ -182,7 +191,7 @@ var newGameState = function () {
     fullSend();
     if (model.fallingPiece === null) {
         var rand = Math.floor(Math.random() * 7);
-        var newPiece = new Piece(SHAPES[1], ctx);
+        var newPiece = new Piece(SHAPES[rand], ctx);
         model.fallingPiece = newPiece;
         model.moveDown();
     }
@@ -222,6 +231,18 @@ document.addEventListener('keydown', function (e) {
             model.move(false);
             break;
         case 's':
+            model.moveDown();
+            break;
+        case 'ArrowUp':
+            model.rotate();
+            break;
+        case 'ArrowRight':
+            model.move(true);
+            break;
+        case 'ArrowLeft':
+            model.move(false);
+            break;
+        case 'ArrowDown':
             model.moveDown();
             break;
     }

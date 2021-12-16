@@ -1,7 +1,7 @@
 const BLOCK_SIDE_LENGTH = 30
 const ROWS = 20
 const COLS = 10
-const SCORE_WORTH = 10
+const SCORE_WORTH = 40
 const GAME_CLOCK = 500
 
 const SHAPES = [
@@ -38,17 +38,29 @@ const SHAPES = [
 
 ]
 
+
+const COLORS = [
+    '#000000',
+    '#FF0000',
+    '#0000FF',
+    '#0000FF',
+    '#FFFF00',
+    '#00FFFF',
+    '#10FF01',
+    '#F000FF'
+]
+
 class GameModel {
     ctx: any;
     fallingPiece: any;
     grid: any;
-    constructor(ctx) {
+    constructor(ctx: any) {
         this.ctx = ctx
         this.fallingPiece = null;
         this.grid = this.makeStartingGrid()
     }
     makeStartingGrid() {
-        let grid = []
+        let grid: any = []
         for (let i = 0; i < ROWS; i++) {
             grid.push([])
             for (let j = 0; j < COLS; j++) {
@@ -57,7 +69,7 @@ class GameModel {
         }
         return grid;
     }
-    collision(x, y) {
+    collision(x: any, y: any) {
         const shape = this.fallingPiece.shape
         const n = shape.length
         for (let i = 0; i < n; i++) {
@@ -83,9 +95,8 @@ class GameModel {
         for (let i = 0; i < this.grid.length; i++) {
             for (let j = 0; j < this.grid[i].length; j++) {
                 let cell = this.grid[i][j]
-                this.ctx.fillStyle = 'green'
+                this.ctx.fillStyle = COLORS[cell]
                 this.ctx.fillRect(j, i, 1, 1)
-                console.log(this.ctx)
             }
         }
 
@@ -102,8 +113,8 @@ class GameModel {
             const shape = this.fallingPiece.shape
             const x = this.fallingPiece.x
             const y = this.fallingPiece.y
-            shape.map((row, i) => {
-                row.map((cell, j) => {
+            shape.map((row: any, i: any) => {
+                row.map((cell: any, j: any) => {
                     let p = x + j
                     let q = y + i
                     if (p >= 0 && p < COLS && q < ROWS && cell > 0) {
@@ -121,7 +132,7 @@ class GameModel {
         }
         this.renderGameState()
     }
-    move(right) {
+    move(right: any) {
         if (this.fallingPiece === null) {
             return
         }
@@ -148,7 +159,7 @@ class GameModel {
                         [this.fallingPiece.shape[y][x], this.fallingPiece.shape[x][y]]
                 }
             }
-            this.fallingPiece.shape.forEach((row => row.reverse()))
+            this.fallingPiece.shape.forEach(((row: any) => row.reverse()))
         }
         this.renderGameState()
     }
@@ -160,17 +171,17 @@ class Piece {
     ctx: any;
     y: any;
     x: any;
-    constructor(shape, ctx) {
+    constructor(shape: any, ctx: any) {
         this.shape = shape
         this.ctx = ctx
         this.y = 0;
         this.x = Math.floor(COLS / 2)
     }
     renderPiece() {
-        this.shape.map((row, i) => {
-            row.map((cell, j) => {
+        this.shape.map((row: any, i: any) => {
+            row.map((cell: any, j: any) => {
                 if (cell > 0) {
-                    this.ctx.fillStyle = 'red'
+                    this.ctx.fillStyle = COLORS[cell]
                     this.ctx.fillRect(this.x + j, this.y + i, 1, 1)
                 }
             })
@@ -193,7 +204,7 @@ let newGameState = () => {
     fullSend()
     if (model.fallingPiece === null) {
         const rand = Math.floor(Math.random() * 7)
-        const newPiece = new Piece(SHAPES[1], ctx)
+        const newPiece = new Piece(SHAPES[rand], ctx)
         model.fallingPiece = newPiece
         model.moveDown()
     } else {
@@ -203,7 +214,7 @@ let newGameState = () => {
 }
 
 const fullSend = () => {
-    const allFilled = (row) => {
+    const allFilled = (row: any) => {
         for (let x of row) {
             if (x === 0) {
                 return false
@@ -235,6 +246,18 @@ document.addEventListener('keydown', (e) => {
             model.move(false)
             break
         case 's':
+            model.moveDown()
+            break
+        case 'ArrowUp':
+            model.rotate()
+            break
+        case 'ArrowRight':
+            model.move(true)
+            break
+        case 'ArrowLeft':
+            model.move(false)
+            break
+        case 'ArrowDown':
             model.moveDown()
             break
     }
