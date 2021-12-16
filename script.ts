@@ -2,7 +2,7 @@ const BLOCK_SIDE_LENGTH = 30
 const ROWS = 20
 const COLS = 10
 const SCORE_WORTH = 10
-const GAME_CLOCK = 1000
+const GAME_CLOCK = 500
 
 const SHAPES = [
     [
@@ -78,11 +78,14 @@ class GameModel {
         return false
     }
     renderGameState() {
+        //this.ctx.canvas.height = 20 * 300
+        //this.ctx.canvas.width = 10 * 300
         for (let i = 0; i < this.grid.length; i++) {
             for (let j = 0; j < this.grid[i].length; j++) {
                 let cell = this.grid[i][j]
                 this.ctx.fillStyle = 'green'
                 this.ctx.fillRect(j, i, 1, 1)
+                console.log(this.ctx)
             }
         }
 
@@ -102,9 +105,9 @@ class GameModel {
             shape.map((row, i) => {
                 row.map((cell, j) => {
                     let p = x + j
-                    let q = y + 1
+                    let q = y + i
                     if (p >= 0 && p < COLS && q < ROWS && cell > 0) {
-                        this.grid[p][q] == shape[i][j]
+                        this.grid[q][p] = shape[i][j]
                     }
                 })
             })
@@ -115,6 +118,37 @@ class GameModel {
             this.fallingPiece = null
         } else {
             this.fallingPiece.y += 1
+        }
+        this.renderGameState()
+    }
+    move(right) {
+        if (this.fallingPiece === null) {
+            return
+        }
+        let x = this.fallingPiece.x
+        let y = this.fallingPiece.y
+        if (right) {
+            if (!this.collision(x + 1, y)) {
+                this.fallingPiece.x += 1
+            }
+        }
+        else {
+            if (!this.collision(x - 1, y)) {
+                this.fallingPiece.x -= 1
+            }
+        }
+        this.renderGameState()
+    }
+    rotate() {
+        if (this.fallingPiece !== null) {
+            let shape = this.fallingPiece.shape
+            for (let y = 0; y < shape.length; y++) {
+                for (let x = 0; x < y; x++) {
+                    [this.fallingPiece.shape[x][y], this.fallingPiece.shape[y][x]] =
+                        [this.fallingPiece.shape[y][x], this.fallingPiece.shape[x][y]]
+                }
+            }
+            this.fallingPiece.shape.forEach((row => row.reverse()))
         }
         this.renderGameState()
     }
@@ -158,8 +192,8 @@ setInterval(() => {
 let newGameState = () => {
     fullSend()
     if (model.fallingPiece === null) {
-        const rand = Math.round(Math.random() * 6) + 1
-        const newPiece = new Piece(SHAPES[rand], ctx)
+        const rand = Math.floor(Math.random() * 7)
+        const newPiece = new Piece(SHAPES[1], ctx)
         model.fallingPiece = newPiece
         model.moveDown()
     } else {
@@ -187,3 +221,21 @@ const fullSend = () => {
     }
     scoreboard.innerHTML = "Score: " + String(score)
 }
+
+document.addEventListener('keydown', (e) => {
+    e.preventDefault()
+    switch (e.key) {
+        case 'w':
+            model.rotate()
+            break
+        case 'd':
+            model.move(true)
+            break
+        case 'a':
+            model.move(false)
+            break
+        case 's':
+            model.moveDown()
+            break
+    }
+})

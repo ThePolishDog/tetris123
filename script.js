@@ -2,7 +2,7 @@ var BLOCK_SIDE_LENGTH = 30;
 var ROWS = 20;
 var COLS = 10;
 var SCORE_WORTH = 10;
-var GAME_CLOCK = 1000;
+var GAME_CLOCK = 500;
 var SHAPES = [
     [
         [0, 0, 0, 0],
@@ -72,11 +72,14 @@ var GameModel = /** @class */ (function () {
         return false;
     };
     GameModel.prototype.renderGameState = function () {
+        //this.ctx.canvas.height = 20 * 300
+        //this.ctx.canvas.width = 10 * 300
         for (var i = 0; i < this.grid.length; i++) {
             for (var j = 0; j < this.grid[i].length; j++) {
                 var cell = this.grid[i][j];
                 this.ctx.fillStyle = 'green';
                 this.ctx.fillRect(j, i, 1, 1);
+                console.log(this.ctx);
             }
         }
         if (this.fallingPiece !== null) {
@@ -96,9 +99,9 @@ var GameModel = /** @class */ (function () {
             shape_1.map(function (row, i) {
                 row.map(function (cell, j) {
                     var p = x_1 + j;
-                    var q = y_1 + 1;
+                    var q = y_1 + i;
                     if (p >= 0 && p < COLS && q < ROWS && cell > 0) {
-                        _this.grid[p][q] == shape_1[i][j];
+                        _this.grid[q][p] = shape_1[i][j];
                     }
                 });
             });
@@ -110,6 +113,37 @@ var GameModel = /** @class */ (function () {
         }
         else {
             this.fallingPiece.y += 1;
+        }
+        this.renderGameState();
+    };
+    GameModel.prototype.move = function (right) {
+        if (this.fallingPiece === null) {
+            return;
+        }
+        var x = this.fallingPiece.x;
+        var y = this.fallingPiece.y;
+        if (right) {
+            if (!this.collision(x + 1, y)) {
+                this.fallingPiece.x += 1;
+            }
+        }
+        else {
+            if (!this.collision(x - 1, y)) {
+                this.fallingPiece.x -= 1;
+            }
+        }
+        this.renderGameState();
+    };
+    GameModel.prototype.rotate = function () {
+        var _a;
+        if (this.fallingPiece !== null) {
+            var shape = this.fallingPiece.shape;
+            for (var y = 0; y < shape.length; y++) {
+                for (var x = 0; x < y; x++) {
+                    _a = [this.fallingPiece.shape[y][x], this.fallingPiece.shape[x][y]], this.fallingPiece.shape[x][y] = _a[0], this.fallingPiece.shape[y][x] = _a[1];
+                }
+            }
+            this.fallingPiece.shape.forEach((function (row) { return row.reverse(); }));
         }
         this.renderGameState();
     };
@@ -147,8 +181,8 @@ setInterval(function () {
 var newGameState = function () {
     fullSend();
     if (model.fallingPiece === null) {
-        var rand = Math.round(Math.random() * 6) + 1;
-        var newPiece = new Piece(SHAPES[rand], ctx);
+        var rand = Math.floor(Math.random() * 7);
+        var newPiece = new Piece(SHAPES[1], ctx);
         model.fallingPiece = newPiece;
         model.moveDown();
     }
@@ -175,3 +209,20 @@ var fullSend = function () {
     }
     scoreboard.innerHTML = "Score: " + String(score);
 };
+document.addEventListener('keydown', function (e) {
+    e.preventDefault();
+    switch (e.key) {
+        case 'w':
+            model.rotate();
+            break;
+        case 'd':
+            model.move(true);
+            break;
+        case 'a':
+            model.move(false);
+            break;
+        case 's':
+            model.moveDown();
+            break;
+    }
+});
